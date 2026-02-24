@@ -1,0 +1,22 @@
+{
+  "name": "example-multi-agent-orchestration-ts",
+  "version": "1.0.0",
+  "description": "Multi-agent pipeline: researcher \u2192 writer \u2192 reviewer with human-in-the-loop approval before publishing",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "start:crash": "bun run src/index.ts --crash"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@resonatehq/sdk": "^0.9.6"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
