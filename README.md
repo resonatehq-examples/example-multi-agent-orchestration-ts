@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./assets/banner.png" alt="Multi Agent Orchestration — Resonate example" />
+</p>
+
 # Multi-Agent Orchestration
 
 An orchestrator coordinates three specialist AI agents in sequence: researcher collects findings, writer drafts an article, reviewer approves it. Each agent handoff is a durable checkpoint.
