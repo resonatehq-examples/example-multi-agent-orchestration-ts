@@ -152,22 +152,13 @@ example-multi-agent-orchestration-ts/
 
 **Lines of code**: ~150 total. The orchestrator itself is 15 lines.
 
-## Comparison
+## Why a generator orchestrates three agents
 
-Trigger.dev's agent patterns require a hosted platform (trigger.dev cloud or self-hosted), event-based function invocations, and explicit retry configuration. Inngest's AgentKit provides similar agent orchestration but is opinionated about the network/routing layer.
+Sequential agent orchestration is often a hosted problem: a platform provides step-level retries, dashboard observability, and an event-based execution model with routing infrastructure. This example solves the narrower problem — coordinate three specialist agents in order, survive any single agent failure, without leaving the process.
 
-| | Resonate | Trigger.dev | Inngest AgentKit |
-|---|---|---|---|
-| Source files | 3 | 5+ | 5+ |
-| Server required | No (embedded) | Yes (hosted/self-hosted) | Yes (hosted/self-hosted) |
-| Agent pattern | Generator function calling agents | Steps in a Task | Network of agents |
-| Retry model | Automatic on any `ctx.run()` failure | Configured per-task | Configured per-step |
-| Human-in-the-loop | `ctx.promise()` built-in | waitForEvent | Custom |
-| Multi-LLM fan-out | `ctx.beginRun()` | Parallel steps | Parallel agents |
+The orchestrator is 15 lines of generator. Each `yield* ctx.run(agent, args)` is a durable checkpoint: a crash or API failure retries only that agent. Researcher output is cached at its checkpoint before writer starts; writer output is cached before reviewer starts. There is no retry configuration, no step metadata, no routing schema — just sequential `yield*` calls.
 
-Where Trigger.dev and Inngest win: cloud hosting, dashboard observability, and managed infrastructure mean zero DevOps burden for teams that don't want to run their own server.
-
-Where Resonate wins: no hosted dependency for development, generator-native sequencing, and `ctx.promise()` for human-in-the-loop without any additional infrastructure.
+Human-in-the-loop extends naturally. `yield* ctx.promise({ id: "approval/topic" })` blocks the workflow until the promise is resolved externally. The orchestrator survives restarts while waiting; the approval is the checkpoint. No hosted approval surface required.
 
 ## Learn More
 
