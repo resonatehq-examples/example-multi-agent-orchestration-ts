@@ -43,9 +43,11 @@ export function* orchestrate(
   const review = yield* ctx.run(reviewer, draft);
 
   // Step 4: Human approval (simulated in demo)
-  // In production: yield* ctx.promise({ id: `approval/${topic}` })
+  // In production:
+  //   const approval = yield* ctx.promise({});
+  //   // surface approval.id externally (email, dashboard) so a human can resolve it
+  //   const decision = yield* approval;
   // This blocks until an external system resolves the promise.
-  // Example: POST /approve/:promiseId → resonate.promises.resolve(id, true)
   const approved = review.toUpperCase().includes("APPROVED");
 
   return {
