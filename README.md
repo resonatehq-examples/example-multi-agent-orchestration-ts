@@ -111,7 +111,7 @@ export function* orchestrate(ctx: Context, topic: string, crashOnWriter: boolean
   const review   = yield* ctx.run(reviewer, draft);
 
   // Human-in-the-loop (production pattern):
-  // const approvalPromise = yield* ctx.promise({ id: `approval/${topic}` });
+  // const approvalPromise = yield* ctx.promise({});
   // const approved = yield* approvalPromise;
 
   return { status: review.includes('APPROVED') ? 'published' : 'rejected', ... };
@@ -124,14 +124,15 @@ The orchestrator has a comment showing how to add real human approval. Replace t
 
 ```typescript
 // Inside orchestrate():
-const approvalPromise = yield* ctx.promise({ id: `approval/${topic}` });
-console.log(`Waiting for approval. Resolve at: POST /approve/${approvalPromise.id}`);
+const approvalPromise = yield* ctx.promise({});
+console.log(`Waiting for approval. Resolve at: POST /promises/${approvalPromise.id}/resolve`);
 const approved = yield* approvalPromise;
 ```
 
-Then resolve it externally:
+`ctx.promise({})` returns a durable promise with an auto-generated id. Surface that id wherever a human will see it (email, dashboard, Slack), then resolve it externally:
+
 ```bash
-curl -X POST http://localhost:8001/promises/approval/my-topic/resolve \
+curl -X POST http://localhost:8001/promises/<approvalPromise.id>/resolve \
   -H 'content-type: application/json' \
   -d '{"data": true}'
 ```
@@ -158,7 +159,7 @@ Sequential agent orchestration is often a hosted problem: a platform provides st
 
 The orchestrator is 15 lines of generator. Each `yield* ctx.run(agent, args)` is a durable checkpoint: a crash or API failure retries only that agent. Researcher output is cached at its checkpoint before writer starts; writer output is cached before reviewer starts. There is no retry configuration, no step metadata, no routing schema — just sequential `yield*` calls.
 
-Human-in-the-loop extends naturally. `yield* ctx.promise({ id: "approval/topic" })` blocks the workflow until the promise is resolved externally. The orchestrator survives restarts while waiting; the approval is the checkpoint. No hosted approval surface required.
+Human-in-the-loop extends naturally. `yield* ctx.promise({})` returns a durable promise with an auto-generated id; yielding the promise blocks the workflow until something external resolves it. The orchestrator survives restarts while waiting; the approval is the checkpoint. No hosted approval surface required.
 
 ## Learn More
 
